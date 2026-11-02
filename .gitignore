@@ -1,0 +1,28 @@
+# Dependency and build artifacts
+node_modules/
+plugin/build/
+plugin/.scaffold/
+plugin/ast.json
+dist/
+research/
+dependency-audit*.json
+# Runtime and all personal data
+.env
+.env.*
+!.env.example
+**/.venv/
+**/*-venv/
+**/__pycache__/
+*.pyc
+runtime-data/
+logs/
+translated/
+server/config/config.json
+server/config/config.toml
+server/config/venv.json
+*.pdf
+*.log
+*.sqlite*
+*.db
+*.pem
+*.key

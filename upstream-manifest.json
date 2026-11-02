@@ -1,0 +1,290 @@
+{
+  "repository": "https://github.com/guaguastandup/zotero-pdf2zh",
+  "revision": "5dd2eaf019f71266764c269bbd2104b559ae95cf",
+  "files": [
+    {
+      "path": "LICENSE",
+      "sha256": "6da1054eef20b8949622f2acc5a89c3243ff3b3d7aa8c2bb8fa5c04d15113c00"
+    },
+    {
+      "path": "plugin/.gitattributes",
+      "sha256": "f70d755466b101646b043fe3c62c4f8a39eae827c1a2a303a2d39ccd93f534f8"
+    },
+    {
+      "path": "plugin/.gitignore",
+      "sha256": "8e137f6c5b3f927e1bba96a4e52f1dd6903ffa6d3fd2331d9e2f3ffa41ec8dd9"
+    },
+    {
+      "path": "plugin/.prettierignore",
+      "sha256": "2909cb25e97c0210c9635647aac59cd3811613a71656775509a55e800fe99ff0"
+    },
+    {
+      "path": "plugin/addon/bootstrap.js",
+      "sha256": "089eb57dbc22018c9d58b3922b64a4cd78b3329ce134d3c737a430ff6f6efec1"
+    },
+    {
+      "path": "plugin/addon/content/icons/favicon.svg",
+      "sha256": "d8b5ead32441b2054be9721eae603e2fe1b9132709c7884079a033f1c5503e51"
+    },
+    {
+      "path": "plugin/addon/content/icons/favicon@0.5x.svg",
+      "sha256": "1099c0f92968e2f393a8debdd0fea999c840ce15c157b04f054655aa4b2349c4"
+    },
+    {
+      "path": "plugin/addon/content/llmApiEditor.xhtml",
+      "sha256": "b03450b69c3a5cb573faf8bf0645f252e2ab3ae96d475a8afe699670cf70c7c3"
+    },
+    {
+      "path": "plugin/addon/content/llmApiEditorEnhancements.js",
+      "sha256": "8d22ce38edd3a75e91a3124d0b270e8afb52d06ccd2c76169eb119bf3b6c7d0d"
+    },
+    {
+      "path": "plugin/addon/content/preferences.xhtml",
+      "sha256": "9756e4de454f73a0ae8881fee594954a0bcb08d36b48e943f7f529d87fe35f9f"
+    },
+    {
+      "path": "plugin/addon/content/zoteroPane.css",
+      "sha256": "74c1151f02a29b5b9eef170d3f23ec278762ef771d1c174666ca9fd97a5825d5"
+    },
+    {
+      "path": "plugin/addon/locale/en-US/addon.ftl",
+      "sha256": "b3cf23338947e72495ea87f9d02b903eedb0cecabf9da0277d0dd48ffa6611b2"
+    },
+    {
+      "path": "plugin/addon/locale/en-US/mainWindow.ftl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "plugin/addon/locale/en-US/preferences.ftl",
+      "sha256": "18b0826263270f1f3df701d39427caf051ef033671a70835ba34682d53364a64"
+    },
+    {
+      "path": "plugin/addon/locale/zh-CN/addon.ftl",
+      "sha256": "2c54ea95897be3f97c3acf5df90feb4d95d29b1deeb419cf9ce37b30a89f9725"
+    },
+    {
+      "path": "plugin/addon/locale/zh-CN/mainWindow.ftl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "plugin/addon/locale/zh-CN/preferences.ftl",
+      "sha256": "6722c59e82b0ed46cab4efe7f7043b7a1242c5887f6f87f40ea661acf601d7b7"
+    },
+    {
+      "path": "plugin/addon/manifest.json",
+      "sha256": "3fc9d00a848c0bb66300873badfd75633178fbd2e7b39e1821b66d76429c50c8"
+    },
+    {
+      "path": "plugin/addon/prefs.js",
+      "sha256": "8ddff5b942b726a98cf827edaf9113e93aa8faa6310b11a0a3ef1450f8b39dcb"
+    },
+    {
+      "path": "plugin/eslint.config.mjs",
+      "sha256": "e8a265647f8c892efb692d0a8bf6166f948b02c4e19c8ba1297eb6df62ff320c"
+    },
+    {
+      "path": "plugin/package-lock.json",
+      "sha256": "26fef96515fd7efad8077d9b3dd11db5f754a33d929aebbd49dc39921afcef02"
+    },
+    {
+      "path": "plugin/package.json",
+      "sha256": "09e604c9d0dba4fe8712d25f71e08c01f1e3af3e555c781631114f94558fcf49"
+    },
+    {
+      "path": "plugin/src/addon.ts",
+      "sha256": "08369d445b35f50828f548eec7f61e6142d7dae4dab6ddabf4873922cb250b4c"
+    },
+    {
+      "path": "plugin/src/hooks.ts",
+      "sha256": "fe784b6fc8e373a4640944e1decc001a814bb52d7cfe2cf44b1d977b3141361f"
+    },
+    {
+      "path": "plugin/src/index.ts",
+      "sha256": "24c95c2b71da5d7dffbefa816fd700a1009fb01b28f57399c12161d5ddd558e5"
+    },
+    {
+      "path": "plugin/src/modules/llmApiManager.ts",
+      "sha256": "4b3934b113d9dc582e39a9f9fb569b4b2d07b3e79ebe383df1cdf1ccba388845"
+    },
+    {
+      "path": "plugin/src/modules/pdf2zh.ts",
+      "sha256": "2f3d17b89bd9b6ec1e26efe3fd077f59444c6c155c67791c25454fd74a371ada"
+    },
+    {
+      "path": "plugin/src/modules/pdf2zhAttachmentUtils.ts",
+      "sha256": "e640501167c4105b8be5d8ff80af8e86e05f7321ff496320eed75e0f014c70e5"
+    },
+    {
+      "path": "plugin/src/modules/pdf2zhFileProcessor.ts",
+      "sha256": "b5e42d40e048910e6f0d9edc6b65940ee35010646c249ca1e56cf034470b5db9"
+    },
+    {
+      "path": "plugin/src/modules/pdf2zhHelper.ts",
+      "sha256": "6918a5e6bfa7aac9eb68c4bf0d52da7a503baeba8bed97a98bfde24234b9f7b8"
+    },
+    {
+      "path": "plugin/src/modules/pdf2zhTypes.ts",
+      "sha256": "c75b074e91ed0e417def85cf3c7dbd36213784a8bbd8dc8b7633c0a942a3e634"
+    },
+    {
+      "path": "plugin/src/modules/preferenceScript.ts",
+      "sha256": "cd2909ee9f50648396b4c2c69ade2e0a9f66e9d5f3bfcfe06f342f31cebe9535"
+    },
+    {
+      "path": "plugin/src/utils/locale.ts",
+      "sha256": "8b37e5b8e4faba12bdf9a5f46fdcab5715b6b8502d0a6f54a02c7d4a52db4b8c"
+    },
+    {
+      "path": "plugin/src/utils/prefs.ts",
+      "sha256": "f785e980f0ffcfdb4d821ffa9f9e47aa534caa4179046b60490467ff9c78efbb"
+    },
+    {
+      "path": "plugin/src/utils/window.ts",
+      "sha256": "c05ffade6ddcb4c63c5941107c6142ab8e9be3d8d9bcec57f7463770fb04be3d"
+    },
+    {
+      "path": "plugin/src/utils/ztoolkit.ts",
+      "sha256": "084f415620a2189c51fd206a64404ed2199f40c4dcc02fcd9c53e4380a0266a5"
+    },
+    {
+      "path": "plugin/tests/pdf2zhAttachmentUtils.test.mts",
+      "sha256": "13fcc2719c79ce0d5101728e135d08c519d12fc9ac7e301ee5430b225bd0f3c4"
+    },
+    {
+      "path": "plugin/tests/pdf2zhMenuLifecycle.test.mts",
+      "sha256": "7d4268471af838caf2721d02bd103ef0af250077b454d93d60509eaf71f83d0f"
+    },
+    {
+      "path": "plugin/tsconfig.json",
+      "sha256": "204fe7af59b798301520a3cc67fec595da7a0d16b3997d7d5c563510976342b2"
+    },
+    {
+      "path": "plugin/typings/epubjs-locations.d.ts",
+      "sha256": "ecfdd399425626a8e4a6b08cc56a791393f84405ef46dc93452511d613e87032"
+    },
+    {
+      "path": "plugin/typings/global.d.ts",
+      "sha256": "8b4c9a0c25ce94f07f68cf52f95c47ac16dbaf77f32d18a040ba58557882f7b2"
+    },
+    {
+      "path": "plugin/typings/prefs.d.ts",
+      "sha256": "01fa91287fb826363e26daa6c34869079e1411c224d2fc83c7177dbfe86c9278"
+    },
+    {
+      "path": "plugin/zotero-plugin.config.ts",
+      "sha256": "403b758ee80467a115bc8f919e4fbc7dc9973bb8e563d42b249c2ff08a64171b"
+    },
+    {
+      "path": "server/config/config.json.example",
+      "sha256": "09c2e01aac61ef0e630663f1a1d53f577821b07413222dff9152fa2035e04297"
+    },
+    {
+      "path": "server/config/config.toml.example",
+      "sha256": "8047025c71a987a8efd01cffac3bbe80b60f01aa7dd71366dd907af4791e09a2"
+    },
+    {
+      "path": "server/config/venv.json.example",
+      "sha256": "477e4c8a3b53a9dd7e460a82ffd1d36cec69aed27aa9d845059422f4d44c976f"
+    },
+    {
+      "path": "server/doc/extraData.md",
+      "sha256": "58690d686531ddbf1483cad3ec5f449424e87e9fe6295f9c168d76c81e994f4e"
+    },
+    {
+      "path": "server/doc/server.md",
+      "sha256": "410e8dddc3dec8778c49586229f45545f9728be7d84909cc302bee339082f1e8"
+    },
+    {
+      "path": "server/favicon.svg",
+      "sha256": "1099c0f92968e2f393a8debdd0fea999c840ce15c157b04f054655aa4b2349c4"
+    },
+    {
+      "path": "server/index.html",
+      "sha256": "3e75bf737f8aaa03959fa6e2872857bfb54bd17f88118224bfc491a3ac5635ee"
+    },
+    {
+      "path": "server/manage_packages.py",
+      "sha256": "c3e896fa2f6532b13ade8428a615582294c17f28d050e03f7e9c18412e322828"
+    },
+    {
+      "path": "server/notice.json",
+      "sha256": "1d750b6206cf6b07e177424933c3df9f1f00956fe00e1f04b756c9f221e9f99d"
+    },
+    {
+      "path": "server/requirements.txt",
+      "sha256": "0b36dd067b8337b52eecd16d272370b42e23b812a9178446a2bc4296468b9c38"
+    },
+    {
+      "path": "server/server.py",
+      "sha256": "6865469e20fd8a728011e86717dce6289feafac79778fd39b2acf0b32777beab"
+    },
+    {
+      "path": "server/update_packages.py",
+      "sha256": "2193591c3ea968680de05e6dcb14ab22e689200776c30b458200c2343e7ded59"
+    },
+    {
+      "path": "server/utils/auto_update.py",
+      "sha256": "3f12d15d1f3d0f2506a43341fe1be5b068e8e6b5295e0e94f04ca924d4bf0da8"
+    },
+    {
+      "path": "server/utils/config.py",
+      "sha256": "9a2345246fd3c8bcb9d29771fb5337e2a12bd5535d92f29e2a2ec0a0a63b590b"
+    },
+    {
+      "path": "server/utils/config_map.py",
+      "sha256": "d552c6d497dd51f11cda5e34d9010c82e893ab0bb048e7778e9fec2dfc057e29"
+    },
+    {
+      "path": "server/utils/config_migration.py",
+      "sha256": "09ad4eb2f53f2a75ea635decbaaf7a2504b781b5fcf522fc4dd1bd8e7ec5a3e7"
+    },
+    {
+      "path": "server/utils/cropper.py",
+      "sha256": "8ad253da89d546b99a56ca8813bb8b585400b19f87f4a896b02179a919e9721b"
+    },
+    {
+      "path": "server/utils/deepseek_thinking.py",
+      "sha256": "52d4b176361f1a2747bf16fcf2bbee19796b5e39b71e66ee7176ee6358385d03"
+    },
+    {
+      "path": "server/utils/environment_lifecycle.py",
+      "sha256": "6734a5a9d93e3b4c5cb7c68f84d2fc22b9342e640bf1a75337c2103800c1132e"
+    },
+    {
+      "path": "server/utils/execute.py",
+      "sha256": "d7b748840227d86faff81051ddba197e4afb26ddc1e24592e62b10faff1767d7"
+    },
+    {
+      "path": "server/utils/package_network.py",
+      "sha256": "02f070aac21a7fc49593ebf87f55e17114666f92e874401db36fc044831febc5"
+    },
+    {
+      "path": "server/utils/record.py",
+      "sha256": "a72e774e9fe578a11e40a65f76c4764d7a7764bc1b4405146a0826bf72886662"
+    },
+    {
+      "path": "server/utils/task_manager.py",
+      "sha256": "fba0a14af89c279b60786d30bfad901b043d149949eb3b704fa701c7b7babc2f"
+    },
+    {
+      "path": "server/utils/venv.py",
+      "sha256": "9c0174eecd5e5028201def10128f7d2511f8806f322eb34c42080b90b62ee347"
+    },
+    {
+      "path": "server/warmup/install-with-conda.bat",
+      "sha256": "8eb0a7fba37ff823bf63deca939a89463a26d349281f3066527ac67da8e874db"
+    },
+    {
+      "path": "server/warmup/install-with-conda.sh",
+      "sha256": "5d4711ed7d4e1aca0c9ef397bda748694202bd390d814bf81302a4d90b4bce03"
+    },
+    {
+      "path": "server/warmup/install-with-uv.bat",
+      "sha256": "dbcd2921df266b773288b2b433a88314e13b7d32ef05a28c512bf392be96d078"
+    },
+    {
+      "path": "server/warmup/install-with-uv.sh",
+      "sha256": "8a6bbc1a4272bf9333f9232776aca2a8b3935b2d8e305a7ee98d0ae37ca2320f"
+    }
+  ]
+}
