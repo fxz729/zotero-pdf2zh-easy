@@ -1,6 +1,6 @@
 {
     "name": "zotero-pdf2zh-easy",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Guided local engine installation, quiet background translation and bilingual PDF progress cards for Zotero. Independent PDF2zh distribution.",
     "config": {
         "addonName": "PDF2zh Easy",

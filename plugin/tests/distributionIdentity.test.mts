@@ -5,7 +5,7 @@ import fs from "node:fs";
 test("fork owns its addon id, chrome namespace, prefs and release origin", () => {
     const pkg = JSON.parse(fs.readFileSync(new URL("../package.json", import.meta.url), "utf8"));
     assert.equal(pkg.name, "zotero-pdf2zh-easy");
-    assert.equal(pkg.version, "0.1.0");
+    assert.equal(pkg.version, "0.1.1");
     assert.equal(pkg.config.addonID, "pdf2zh-easy@fxz729");
     assert.equal(pkg.config.addonRef, "pdf2zhEasy");
     assert.equal(pkg.config.addonInstance, "pdf2zhEasy");

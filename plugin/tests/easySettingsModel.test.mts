@@ -65,12 +65,12 @@ test("explicit presets only patch basic preferences, never advanced quality sett
     assert.throws(() => model.translationPreferences({ preset: "other", sourceLang: "en", targetLang: "ja", dualMode: "LR", disableGlossary: true }));
 });
 
-test("new-profile defaults use eight workers and four QPS without a prefilled API", () => {
+test("new-profile Next defaults use 128 workers and 48 QPS without changing legacy engine or prefilled API", () => {
     const defaults: any = {};
     vm.runInNewContext(fs.readFileSync(new URL("../addon/prefs.js", import.meta.url), "utf8"), { pref: (key: string, value: any) => defaults[key.split(".").at(-1)!] = value });
-    assert.equal(defaults.poolSize, 8);
+    assert.equal(defaults.poolSize, 128);
     assert.equal(defaults.threadNum, 8);
-    assert.equal(defaults.qps, 4);
+    assert.equal(defaults.qps, 48);
     assert.equal(defaults.disableGlossary, true);
     assert.equal(defaults.next_service, "openailiked");
     assert.equal(defaults.llmApis, undefined);

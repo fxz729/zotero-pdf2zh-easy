@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "release_version": "0.1.1",
+  "artifact": {
+    "sha256": "d93608b93efef32f12df7621f90038c788af5b9fe071913407f5b24ffe110a98",
+    "addon_id": "pdf2zh-easy@fxz729",
+    "new_install_next_defaults": {"poolSize": 128, "qps": 48},
+    "conservative_preset": {"poolSize": 8, "qps": 4},
+    "existing_saved_preferences_overwritten": false,
+    "both_update_feeds_version_link_and_sha512_verified": true
+  },
+  "local_validation": {
+    "os": "Windows",
+    "architecture": "x86_64",
+    "node_tests_passed": 128,
+    "python_tests_passed": 106,
+    "typescript_check_passed": true,
+    "production_build_passed": true,
+    "xpi_archive_audit_passed": true,
+    "runtime_version": "0.1.0",
+    "runtime_source_files_verified": 25,
+    "runtime_source_files_byte_identical_to_published_0_1_0": true,
+    "default_and_version_regressions_failed_before_implementation": true,
+    "conservative_saved_preferences_keep_path_regression_passed": true
+  },
+  "native_acceptance": {
+    "performed_for_this_version": false,
+    "zotero_launched_or_restarted_for_this_change": false,
+    "user_api_or_profile_modified_for_this_change": false,
+    "paid_translation_performed_for_this_change": false,
+    "historical_record": "docs/verification/windows-0.1.0.json",
+    "historical_evidence_not_a_full_native_retest_of_0_1_1": true
+  },
+  "readme_preview_images": {
+    "source": "three_user_provided_screenshots_authorized_for_public_repository_preview",
+    "metadata_removed": true,
+    "not_a_speed_benchmark_or_translation_accuracy_evaluation": true,
+    "no_full_source_paper_included": true
+  },
+  "remote_ci": {
+    "status_source": "https://github.com/fxz729/zotero-pdf2zh-easy/actions",
+    "success_not_asserted": true,
+    "previous_runs_blocked_before_steps_by_account_billing_lock": true
+  },
+  "limitations": [
+    "128_workers_and_48_qps_are_engine_configuration_limits_not_measured_throughput",
+    "no_controlled_speed_comparison_or_speedup_factor_measured",
+    "higher_concurrency_requires_provider_quota_balance_and_local_resources",
+    "macos_and_linux_not_native_tested",
+    "other_zotero_versions_and_general_translation_accuracy_not_verified"
+  ]
+}

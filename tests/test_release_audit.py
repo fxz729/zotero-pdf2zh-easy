@@ -22,7 +22,8 @@ if SCRIPT.exists():
 else:
     audit = SimpleNamespace()
 
-VERSION = '0.1.0'
+VERSION = '0.1.1'
+RUNTIME_VERSION = '0.1.0'
 FEED = 'https://github.com/fxz729/zotero-pdf2zh-easy/releases/latest/download/update.json'
 RUNTIME_PATHS = [
     'runtime/bootstrap.py', 'runtime/security.py', 'runtime/requirements-server.txt', 'runtime/requirements-engine.txt',
@@ -43,7 +44,7 @@ def archive_entries():
         data = ('synthetic public source for ' + name + '\n').encode()
         entries['content/runtime/' + name] = data
         files.append({'path': name, 'size': len(data), 'sha256': hashlib.sha256(data).hexdigest()})
-    entries['content/runtime/runtime-manifest.json'] = json.dumps({'version': VERSION, 'files': files}).encode()
+    entries['content/runtime/runtime-manifest.json'] = json.dumps({'version': RUNTIME_VERSION, 'files': files}).encode()
     return entries
 
 

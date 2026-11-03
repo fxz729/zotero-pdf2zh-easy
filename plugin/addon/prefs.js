@@ -16,8 +16,8 @@ pref("__prefsPrefix__.next_serviceSelect", "openailiked");
 
 pref("__prefsPrefix__.skipLastPages", 0);
 pref("__prefsPrefix__.threadNum", 8);
-pref("__prefsPrefix__.qps", 4);
-pref("__prefsPrefix__.poolSize", 8);
+pref("__prefsPrefix__.qps", 48);
+pref("__prefsPrefix__.poolSize", 128);
 pref("__prefsPrefix__.rename", true);
 pref("__prefsPrefix__.showProgress", true);
 

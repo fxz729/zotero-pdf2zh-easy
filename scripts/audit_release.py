@@ -15,7 +15,8 @@ import subprocess
 import sys
 from zipfile import BadZipFile, ZipFile
 
-VERSION = '0.1.0'
+VERSION = '0.1.1'
+RUNTIME_VERSION = '0.1.0'
 ADDON_ID = 'pdf2zh-easy@fxz729'
 UPDATE_URL = 'https://github.com/fxz729/zotero-pdf2zh-easy/releases/latest/download/update.json'
 RUNTIME_PREFIX = 'content/runtime/'
@@ -228,7 +229,7 @@ def _validate_runtime(report, files):
     try:
         manifest = json.loads(files[RUNTIME_MANIFEST])
         entries = manifest['files']
-        if manifest.get('version') != VERSION or not isinstance(entries, list) or not entries or len(entries) > 100:
+        if manifest.get('version') != RUNTIME_VERSION or not isinstance(entries, list) or not entries or len(entries) > 100:
             raise ValueError()
     except (KeyError, ValueError, TypeError, AttributeError):
         _problem(report, RUNTIME_MANIFEST, 'runtime_manifest_invalid_or_missing'); return

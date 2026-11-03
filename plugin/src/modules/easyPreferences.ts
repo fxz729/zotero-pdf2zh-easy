@@ -149,8 +149,8 @@ export function registerEasyPreferences(win: Window, onSaved: () => void): void 
     const basic = section("03 / 翻译基本选项");
     const source = input(basic, "source", "源语言"); source.value = String(getPref("sourceLang") || "en");
     const target = input(basic, "target", "目标语言"); target.value = String(getPref("targetLang") || "zh-CN");
-    const preset = select(basic, "preset", "并发 / QPS", [["keep", `保持当前设置（${getPref("poolSize") ?? 8} / ${getPref("qps") ?? 4}）`], ["conservative", "稳妥 · 8 并发 / 4 QPS"], ["fast", "高吞吐 · 128 并发 / 48 QPS"]]); preset.value = "keep";
-    basic.appendChild(element("p", "高吞吐需服务商允许的限额与足够余额，可能触发限流。预设只在点击保存时应用，不改已有高级质量参数。"));
+    const preset = select(basic, "preset", "并发 / QPS", [["keep", `保持当前设置（${getPref("poolSize") ?? 128} / ${getPref("qps") ?? 48}）`], ["conservative", "稳妥 · 8 并发 / 4 QPS"], ["fast", "高吞吐 · 128 并发 / 48 QPS"]]); preset.value = "keep";
+    basic.appendChild(element("p", "新安装默认 128 并发 / 48 QPS，需足够的服务商配额与余额，可能增加费用或触发 429 限流；遇到限流可切换稳妥 8/4 预设。已有设置不自动覆盖，预设只在点击保存时应用，不改已有高级质量参数。"));
     const dual = select(basic, "dual", "双语布局", [["LR", "左右并排"], ["TB", "上下排列"]]); dual.value = String(getPref("dualMode") || "LR");
     const glossary = input(basic, "glossary", "关闭术语表自动提取", "checkbox"); glossary.checked = [true, "true", 1].includes(getPref("disableGlossary") as any);
     const basicStatus = status(basic, "basic-status");

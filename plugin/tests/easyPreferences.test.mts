@@ -70,6 +70,29 @@ test("four sections initialize blank without changing prefs, requesting APIs or 
     assert.equal(s.subscribers(), 1);
 });
 
+test("unset preset display reflects fast defaults and warns about quota, cost and 429 without writes", () => {
+    const s = setup(); s.start();
+    assert.equal(s.node("preset").children[0].textContent, "保持当前设置（128 / 48）");
+    const text = s.all().map(n => n.textContent).join("\n");
+    assert.match(text, /429/);
+    assert.match(text, /8.*4/);
+    assert.match(text, /配额|限额/);
+    assert.match(text, /费用|余额/);
+    assert.equal(s.writes.length, 0);
+});
+
+test("opening and saving keep preserves existing conservative settings and advanced quality", async () => {
+    const s = setup({ poolSize: 8, qps: 4, sourceLang: "en", targetLang: "zh-CN", dualMode: "LR", disableGlossary: true, quality: "custom" });
+    s.start();
+    assert.equal(s.node("preset").children[0].textContent, "保持当前设置（8 / 4）");
+    assert.equal(s.writes.length, 0);
+    await s.node("save-basic").click();
+    assert.equal(s.prefs.poolSize, 8);
+    assert.equal(s.prefs.qps, 4);
+    assert.equal(s.prefs.quality, "custom");
+    assert.equal(s.writes.some(([name]) => ["poolSize", "qps", "quality"].includes(name)), false);
+});
+
 test("settings attach to this addon pane even when another groupbox was loaded first", () => {
     const s = setup({}, true); s.start();
     assert.equal(s.all().filter(n => n.tagName === "section").length, 4);
