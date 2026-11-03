@@ -98,6 +98,8 @@ API 配置沿用上游的本地 Zotero 偏好存储方式，**不是加密保险
 
 其他 Zotero 版本尚未实机验证。Windows ARM64、32 位系统、Linux musl 等不在当前固定资产选择范围内。本地自动化回归为 **Node 126 项、Python 106 项通过**；远程 CI 请查看 [GitHub Actions 实时状态](https://github.com/fxz729/zotero-pdf2zh-easy/actions)，本文不宣称其已通过。构建或跨系统单元测试不能代替原生 Zotero 验收。
 
+首次远程运行 [41591122433](https://github.com/fxz729/zotero-pdf2zh-easy/actions/runs/41591122433) 中，三平台任务均因 GitHub 账号账单锁定而未启动，未执行测试或构建；这不是远程测试通过，也不是代码测试失败的证据。解除账号限制后可手动重跑。
+
 ### Windows 0.1.0 验收摘要
 
 公开数据仅取维护者提供的脱敏统计，详见 [Windows 验证记录](<docs/verification/windows-0.1.0.json>)，不包含原报告、个人路径、账号或 API 配置。**以下完整原生链条数据均属于基线包，不是最终包的完整重测结果。**

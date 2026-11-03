@@ -98,7 +98,13 @@
     "python_tests_passed": 106,
     "build_includes_post_archive_only_audit": true,
     "remote_ci_status_source": "https://github.com/fxz729/zotero-pdf2zh-easy/actions",
-    "remote_ci_result_asserted_here": false
+    "remote_ci_result_asserted_here": false,
+    "initial_remote_ci": {
+      "run_url": "https://github.com/fxz729/zotero-pdf2zh-easy/actions/runs/41591122433",
+      "status": "jobs_not_started_account_billing_lock",
+      "platform_jobs_attempted": 3,
+      "test_or_build_steps_executed": false
+    }
   },
   "public_screenshots": {
     "settings": "docs/images/settings.png",
