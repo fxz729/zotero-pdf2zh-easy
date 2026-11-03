@@ -1,27 +1,27 @@
 {
-    "name": "zotero-pdf2zh",
-    "version": "4.1.8",
-    "description": "PDF translation for Zotero with PDF2zh/PDF2zh_next, bilingual layouts, batch processing, and DeepSeek V4 support.",
+    "name": "zotero-pdf2zh-easy",
+    "version": "0.1.0",
+    "description": "Guided local engine installation, quiet background translation and bilingual PDF progress cards for Zotero. Independent PDF2zh distribution.",
     "config": {
-        "addonName": "Zotero PDF2zh",
-        "addonID": "pdf2zh@guaguastandup.com",
-        "addonRef": "pdf2zh",
-        "addonInstance": "pdf2zh",
-        "prefsPrefix": "extensions.zotero.pdf2zh"
+        "addonName": "PDF2zh Easy",
+        "addonID": "pdf2zh-easy@fxz729",
+        "addonRef": "pdf2zhEasy",
+        "addonInstance": "pdf2zhEasy",
+        "prefsPrefix": "extensions.zotero.pdf2zhEasy"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/guaguastandup/zotero-pdf2zh.git"
+        "url": "git+https://github.com/fxz729/zotero-pdf2zh-easy.git"
     },
-    "author": "guaguastandup",
+    "author": "guaguastandup (upstream); fxz729 (Easy distribution)",
     "bugs": {
-        "url": "https://github.com/guaguastandup/zotero-pdf2zh/issues"
+        "url": "https://github.com/fxz729/zotero-pdf2zh-easy/issues"
     },
-    "homepage": "https://github.com/guaguastandup/zotero-pdf2zh#readme",
+    "homepage": "https://github.com/fxz729/zotero-pdf2zh-easy#readme",
     "license": "AGPL-3.0-or-later",
     "scripts": {
         "start": "zotero-plugin serve",
-        "build": "tsc --noEmit && zotero-plugin build",
+        "build": "node ../scripts/package-runtime.cjs && tsc --noEmit && zotero-plugin build && python -B ../scripts/audit_release.py --archive-only --xpi build/pdf-2-zh-easy.xpi",
         "lint:check": "prettier --check . && eslint .",
         "lint:fix": "prettier --write . && eslint . --fix",
         "release": "zotero-plugin release",
@@ -33,6 +33,7 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.22.0",
+        "@napi-rs/canvas": "^0.1.80",
         "@types/node": "^22.13.10",
         "axios": "^1.8.2",
         "eslint": "^9.22.0",
@@ -41,9 +42,8 @@
         "prettier": "^3.5.3",
         "typescript": "^5.8.2",
         "typescript-eslint": "^8.26.0",
-        "zotero-plugin-scaffold": "^0.3.2",
-        "zotero-types": "^4.1.0-beta.4",
-        "@napi-rs/canvas": "^0.1.80"
+        "zotero-plugin-scaffold": "0.9.3",
+        "zotero-types": "^4.1.0-beta.4"
     },
     "prettier": {
         "printWidth": 80,

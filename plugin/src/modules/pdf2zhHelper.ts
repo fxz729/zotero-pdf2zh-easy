@@ -1,4 +1,7 @@
 import { getPref } from "../utils/prefs";
+import { ProgressCard } from "./progressCard";
+import { ManagedRuntime } from "./managedRuntime";
+import { SERVICE_URL } from "./runtimeManifest";
 import { getString } from "../utils/locale";
 import { version as pluginVersion } from "../../package.json";
 import { FileProcessor } from "./pdf2zhFileProcessor";
@@ -14,6 +17,12 @@ import {
     JobProgressUpdate,
 } from "./pdf2zhTypes";
 import { loadLLMApisFromPrefs } from "./preferenceScript";
+import { Privacy } from "./privacy";
+
+function privateText(value: unknown): string {
+    // Diagnostic fallback is intentionally fail-closed in minimal test hosts.
+    return Privacy?.text(value) ?? "诊断详情已隐藏";
+}
 
 export class PDF2zhHelperFactory {
     // 翻译请求本身不要重试，避免同一篇 PDF 被重复翻译。
@@ -65,7 +74,7 @@ export class PDF2zhHelperFactory {
             } catch (error) {
                 const message =
                     error instanceof Error
-                        ? error.message
+                        ? privateText(error.message)
                         : getString("operation-error-unknown");
                 ztoolkit.getGlobal("alert")(
                     getString("operation-error-prefix", {
@@ -89,7 +98,7 @@ export class PDF2zhHelperFactory {
             progress.complete(result.succeeded, result.failed);
         } catch (error) {
             progress.complete(0, tasks.length);
-            throw error;
+            throw new Error(privateText(error));
         }
     }
 
@@ -130,7 +139,7 @@ export class PDF2zhHelperFactory {
                     parts.push(`${Math.round(update.percent)}%`);
                 }
                 if (update.detail) {
-                    parts.push(update.detail);
+                    parts.push(privateText(update.detail));
                 }
                 text = getString("operation-progress-running", {
                     args: {
@@ -167,7 +176,7 @@ export class PDF2zhHelperFactory {
     }
 
     static shortProgressError(message: string): string {
-        const compact = message.replace(/\s+/g, " ").trim();
+        const compact = privateText(message).replace(/\s+/g, " ").trim();
         if (compact.length <= 80) {
             return compact;
         }
@@ -245,10 +254,11 @@ export class PDF2zhHelperFactory {
         ) => void,
     ) {
         const { fileName, item, config, endpoint } = params; // config
-        ztoolkit.log(
+        Privacy?.log(
             `Processing Single File: ${fileName}, ServerConfig: ${config}`,
         );
         try {
+            if (await ManagedRuntime.ensureReady(config.serverUrl)) config.serverUrl = SERVICE_URL;
             onProgress?.({ phase: "submitting", fileName, endpoint });
             const fileData = await this.prepareFileData(item);
             const response = await this.sendRequest(
@@ -261,10 +271,10 @@ export class PDF2zhHelperFactory {
             await this.handleResponse(response, item, config);
             onProgress?.({ phase: "file-done", fileName, endpoint });
         } catch (error) {
-            ztoolkit.log(`处理单个文件失败: ${fileName}, 错误: ${error}`);
+            Privacy?.log(`处理单个文件失败: ${fileName}, 错误: ${error}`);
             const message =
                 error instanceof Error
-                    ? error.message
+                    ? privateText(error.message)
                     : getString("operation-error-unknown");
             onProgress?.({
                 phase: "file-failed",
@@ -280,7 +290,7 @@ export class PDF2zhHelperFactory {
             // FileProcessor owns batch success/failure accounting. Propagate the
             // error after showing the per-file message so a failed task is not
             // counted as success.
-            throw error;
+            throw new Error(privateText(error));
         }
     }
 
@@ -311,6 +321,7 @@ export class PDF2zhHelperFactory {
                 llmApiConfig = this.getActiveLLMApiConfig(config.next_service);
             }
 
+            Privacy?.register(llmApiConfig);
             const requestBody: any = {
                 fileName: fileData.fileName,
                 fileContent: fileData.base64,
@@ -319,11 +330,11 @@ export class PDF2zhHelperFactory {
                 // 没带这个标记的旧插件（含 DCC 4.0.3）会走 Server 同步返回 fileList。
                 asyncJob: true,
             };
-            ztoolkit.log("server config: ", config);
+            Privacy?.log("server config: ", config);
             // 如果有激活的 LLM API 配置，添加到请求中
             if (llmApiConfig) {
                 requestBody.llm_api = llmApiConfig;
-                ztoolkit.log("llmApiConfig", {
+                Privacy?.log("llmApiConfig", {
                     service: llmApiConfig.service,
                     model: llmApiConfig.model,
                     apiUrl: llmApiConfig.apiUrl,
@@ -331,7 +342,7 @@ export class PDF2zhHelperFactory {
                     extraDataKeys: Object.keys(llmApiConfig.extraData || {}),
                 });
             }
-            const response = await fetch(`${config.serverUrl}/${endpoint}`, {
+            const response = await ManagedRuntime.fetch(`${config.serverUrl}/${endpoint}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -351,21 +362,16 @@ export class PDF2zhHelperFactory {
             try {
                 result = this.parseServerPayload(text);
             } catch (error) {
-                ztoolkit.log(`response`, response, text);
-                throw new Error(
-                    text ||
-                        (error instanceof Error
-                            ? error.message
-                            : `服务器返回错误 HTTP ${response.status}`),
-                );
+                Privacy?.log(`服务器响应无效 HTTP ${response.status}`);
+                throw new Error(`服务器返回了无效响应 HTTP ${response.status}`);
             }
             if (
                 !response.ok ||
                 result.status === "error" ||
                 result.status === "failed"
             ) {
-                ztoolkit.log(`response`, response, result);
-                throw new Error(result.message || "服务器返回错误");
+                Privacy?.log(`服务器返回错误 HTTP ${response.status}`, privateText(result.message || "服务器返回错误"));
+                throw new Error(privateText(result.message || "服务器返回错误"));
             }
             const taskId = this.taskIdFromPayload(result);
             if (
@@ -460,7 +466,7 @@ export class PDF2zhHelperFactory {
         if (failed) {
             return {
                 status: "error",
-                message: String(
+                message: privateText(
                     nested?.message || task.error || task.message || "翻译失败",
                 ),
             };
@@ -500,7 +506,7 @@ export class PDF2zhHelperFactory {
     ): Promise<Record<string, unknown> | undefined> {
         const base = this.normalizeServerUrl(config.serverUrl);
         try {
-            const tasksRes = await fetch(`${base}/api/tasks`, {
+            const tasksRes = await ManagedRuntime.fetch(`${base}/api/tasks`, {
                 cache: "no-store",
             });
             const tasksData = tasksRes.ok
@@ -515,7 +521,7 @@ export class PDF2zhHelperFactory {
             if (matched) {
                 return matched;
             }
-            const historyRes = await fetch(`${base}/api/history`, {
+            const historyRes = await ManagedRuntime.fetch(`${base}/api/history`, {
                 cache: "no-store",
             });
             const historyData = historyRes.ok
@@ -530,7 +536,7 @@ export class PDF2zhHelperFactory {
                 (task) => this.taskIdFromPayload(task) === taskId,
             );
         } catch (error) {
-            ztoolkit.log("读取翻译任务状态失败:", error);
+            Privacy?.log("读取翻译任务状态失败:", error);
             return undefined;
         }
     }
@@ -561,10 +567,10 @@ export class PDF2zhHelperFactory {
             const payload = this.completedTaskPayload(task, taskId);
             if (payload) {
                 if (payload.status === "error") {
-                    throw new Error(payload.message || "翻译失败");
+                    throw new Error(privateText(payload.message || "翻译失败"));
                 }
                 const files = this.stringList(payload.fileList);
-                ztoolkit.log(
+                Privacy?.log(
                     `任务 ${taskId} 已完成，准备导入 ${files.length} 个文件`,
                 );
                 return payload;
@@ -579,7 +585,7 @@ export class PDF2zhHelperFactory {
                         getString("operation-error-completed-no-files"),
                     );
                 }
-                ztoolkit.log(
+                Privacy?.log(
                     `任务 ${taskId} 标记完成但还没有文件，等待 Server 落盘`,
                 );
             } else {
@@ -589,7 +595,7 @@ export class PDF2zhHelperFactory {
                 const raw = Number(task.progress);
                 onRunning?.({
                     percent: Number.isFinite(raw) ? raw : 0,
-                    message: String(task.message || task.status || ""),
+                    message: privateText(task.message || task.status || ""),
                 });
             }
             await Zotero.Promise.delay(1000);
@@ -602,16 +608,16 @@ export class PDF2zhHelperFactory {
         item: Zotero.Item,
         config: ServerConfig,
     ) {
-        ztoolkit.log("response", response);
+        Privacy?.log("服务器任务响应", { status: response.status });
         if (response.status === "accepted") {
             throw new Error("任务仍在处理中，尚未完成");
         }
         if (response.status !== "success") {
-            ztoolkit.log(`服务器返回错误: ${response.message}`);
-            throw new Error(String(response.message || "服务器返回错误"));
+            Privacy?.log(`服务器返回错误: ${response.message}`);
+            throw new Error(privateText(response.message || "服务器返回错误"));
         }
         if (!Array.isArray(response.fileList)) {
-            ztoolkit.log(`服务器返回的 fileList 不是数组`);
+            Privacy?.log(`服务器返回的 fileList 不是数组`);
             throw new Error(getString("operation-error-no-files"));
         }
         const fileList = response.fileList as string[];
@@ -641,9 +647,9 @@ export class PDF2zhHelperFactory {
                 });
                 attached++;
             } catch (error) {
-                ztoolkit.log(`处理文件 ${fileName} 时出错:`, error);
+                Privacy?.log(`处理文件 ${fileName} 时出错:`, error);
                 errors.push(
-                    error instanceof Error ? error : new Error(String(error)),
+                    new Error(privateText(error)),
                 );
             }
         }
@@ -678,7 +684,7 @@ export class PDF2zhHelperFactory {
         try {
             return await IOUtils.exists(path);
         } catch (error) {
-            ztoolkit.log(`检查路径 ${path} 时出错:`, error);
+            Privacy?.log(`检查路径 ${path} 时出错:`, error);
             return false;
         }
     }
@@ -756,7 +762,7 @@ export class PDF2zhHelperFactory {
         config: ServerConfig,
     ): Promise<Uint8Array> {
         const url = this.translatedFileUrl(config.serverUrl, fileName);
-        const response = await fetch(url, { method: "GET" });
+        const response = await ManagedRuntime.fetch(url, { method: "GET" });
         if (!response.ok) {
             throw new Error(`下载失败 HTTP ${response.status}: ${fileName}`);
         }
@@ -812,7 +818,7 @@ export class PDF2zhHelperFactory {
             try {
                 candidates.push(PathUtils.join(outputDir, fileName));
             } catch (error) {
-                ztoolkit.log(
+                Privacy?.log(
                     `拼接本地输出路径失败: ${outputDir} / ${fileName}`,
                     error,
                 );
@@ -856,14 +862,14 @@ export class PDF2zhHelperFactory {
                 attachKeys,
             });
             if (attached) {
-                ztoolkit.log(`已从本地路径添加附件: ${localPath}`);
+                Privacy?.log(`已从本地路径添加附件: ${localPath}`);
             }
             return attached;
         } finally {
             try {
                 await IOUtils.remove(tempPath);
             } catch (error) {
-                ztoolkit.log(`清理临时文件失败: ${tempPath}`, error);
+                Privacy?.log(`清理临时文件失败: ${tempPath}`, error);
             }
         }
     }
@@ -904,12 +910,12 @@ export class PDF2zhHelperFactory {
                         if (!attached) {
                             throw new Error(`未能添加附件: ${fileName}`);
                         }
-                        ztoolkit.log(`已通过 HTTP 添加文件: ${fileName}`);
+                        Privacy?.log(`已通过 HTTP 添加文件: ${fileName}`);
                     } finally {
                         try {
                             await IOUtils.remove(tempPath);
                         } catch (error) {
-                            ztoolkit.log(
+                            Privacy?.log(
                                 `清理临时文件失败: ${tempPath}`,
                                 error,
                             );
@@ -922,7 +928,7 @@ export class PDF2zhHelperFactory {
             return;
         } catch (error) {
             httpError = error;
-            ztoolkit.log(`HTTP 下载附件失败 ${fileName}，尝试本机路径:`, error);
+            Privacy?.log(`HTTP 下载附件失败 ${fileName}，尝试本机路径:`, error);
         }
 
         for (const localPath of this.localPathCandidates(
@@ -944,7 +950,7 @@ export class PDF2zhHelperFactory {
                     return;
                 }
             } catch (error) {
-                ztoolkit.log(`本地路径导入失败 ${localPath}:`, error);
+                Privacy?.log(`本地路径导入失败 ${localPath}:`, error);
             }
         }
 
@@ -980,7 +986,7 @@ export class PDF2zhHelperFactory {
         }
         const attachKey = `${parentItemID ?? "none"}::${service}::${type}::${leafName}`;
         if (attachKeys.has(attachKey)) {
-            ztoolkit.log(`跳过本轮重复附件: ${newTitle}`);
+            Privacy?.log(`跳过本轮重复附件: ${newTitle}`);
             return true;
         }
         // parentItemID and collections cannot both be provided.
@@ -999,7 +1005,7 @@ export class PDF2zhHelperFactory {
             title: options.rename ? newTitle : leafName,
         });
         if (!attachment?.id) {
-            ztoolkit.log(`importFromFile 未返回附件: ${newTitle}`);
+            Privacy?.log(`importFromFile 未返回附件: ${newTitle}`);
             return false;
         }
         attachKeys.add(attachKey);
@@ -1007,7 +1013,7 @@ export class PDF2zhHelperFactory {
             try {
                 Zotero.Reader.open(attachment.id);
             } catch (error) {
-                ztoolkit.log(
+                Privacy?.log(
                     `附件已添加，但打开阅读器失败: ${newTitle}`,
                     error,
                 );
@@ -1114,12 +1120,11 @@ export class PDF2zhHelperFactory {
             try {
                 return await operation();
             } catch (error) {
-                lastError =
-                    error instanceof Error ? error : new Error(String(error));
+                lastError = new Error(privateText(error));
                 if (attempt === maxRetries) {
                     throw lastError;
                 }
-                ztoolkit.log(
+                Privacy?.log(
                     `操作失败，第 ${attempt} 次重试 (共 ${maxRetries} 次): ${lastError.message}`,
                 );
                 await new Promise((resolve) =>
@@ -1150,17 +1155,31 @@ export class PDF2zhHelperFactory {
         const collections = item.getCollections();
         return collections.length > 0 ? [collections[0]] : undefined;
     }
+
+    static registerProgressWindow(win: Window): void {
+        JobProgressPopup.registerWindow(win);
+    }
+
+    static disposeProgressWindow(win: Window): void {
+        JobProgressPopup.disposeWindow(win);
+    }
+
+    static disposeProgress(): void {
+        JobProgressPopup.dispose();
+    }
 }
 
 class JobProgressPopup {
     private static shared: {
-        window: any;
-        lineCount: number;
+        views: Map<Window, ProgressCard>;
+        lines: Array<{ text: string; type: string; progress: number }>;
         batches: number;
         closeToken: number;
+        hasErrors: boolean;
     } | null = null;
 
-    private window: any;
+    private shared: typeof JobProgressPopup.shared = null;
+    private completed = false;
     private summaryIdx: number;
     private fileIdx: number[];
     private total: number;
@@ -1186,15 +1205,13 @@ class JobProgressPopup {
         this.fileIdx = [];
         this.summaryIdx = 0;
         if (!this.enabled) {
-            this.window = null;
             return;
         }
-        const firstOpen = !JobProgressPopup.shared?.window;
         const shared = JobProgressPopup.ensureWindow();
-        this.window = shared.window;
+        this.shared = shared;
         shared.batches += 1;
         shared.closeToken += 1;
-        this.summaryIdx = shared.lineCount;
+        this.summaryIdx = shared.lines.length;
         this.createLine({
             text: getString("operation-batch-started", {
                 args: { count: this.total },
@@ -1203,7 +1220,7 @@ class JobProgressPopup {
             progress: 0,
         });
         this.fileIdx = fileNames.map((fileName) => {
-            const idx = shared.lineCount;
+            const idx = shared.lines.length;
             this.createLine({
                 text: getString("operation-progress-waiting", {
                     args: { fileName },
@@ -1213,55 +1230,70 @@ class JobProgressPopup {
             });
             return idx;
         });
-        if (firstOpen) {
-            try {
-                this.window.show();
-            } catch (error) {
-                ztoolkit.log("显示进度窗口失败:", error);
-            }
-        }
+        for (const view of shared.views.values()) view.show();
     }
 
     private static ensureWindow() {
-        if (!JobProgressPopup.shared?.window) {
-            const window = new ztoolkit.ProgressWindow(
-                getString("operation-progress-title"),
-                {
-                    closeOnClick: false,
-                    closeTime: -1,
-                    closeOtherProgressWindows: false,
-                },
-            );
-            JobProgressPopup.shared = {
-                window,
-                lineCount: 0,
+        if (!this.shared) {
+            this.shared = {
+                views: new Map(),
+                lines: [],
                 batches: 0,
                 closeToken: 0,
+                hasErrors: false,
             };
         }
-        return JobProgressPopup.shared;
+        const windows = Zotero.getMainWindows?.() ?? [Zotero.getMainWindow()];
+        for (const win of windows) {
+            if (win && !win.closed) this.registerWindow(win);
+        }
+        return this.shared;
+    }
+
+    static registerWindow(win: Window): void {
+        const shared = this.shared;
+        if (!shared || shared.views.has(win) || win.closed) return;
+        const view = ProgressCard.forWindow(win, getString("operation-progress-title"));
+        shared.views.set(win, view);
+        for (const line of shared.lines) view.createLine(line);
+        view.show();
+    }
+
+    static disposeWindow(win: Window): void {
+        this.shared?.views.delete(win);
+        ProgressCard.dispose(win);
+    }
+
+    static dispose(): void {
+        const shared = this.shared;
+        this.shared = null;
+        if (!shared) return;
+        shared.closeToken += 1;
+        for (const win of shared.views.keys()) ProgressCard.dispose(win);
+        shared.views.clear();
     }
 
     private createLine(line: { text: string; type: string; progress: number }) {
-        if (!this.window || !JobProgressPopup.shared) {
-            return;
-        }
-        this.window.createLine(line);
-        JobProgressPopup.shared.lineCount += 1;
+        const shared = this.shared;
+        if (!shared || JobProgressPopup.shared !== shared) return;
+        shared.lines.push(line);
+        for (const view of shared.views.values()) view.createLine(line);
     }
 
     private changeLine(
         idx: number,
         line: { text: string; type: string; progress: number },
     ) {
-        if (!this.window) {
-            return;
-        }
-        try {
-            this.window.changeLine({ idx, ...line });
-            this.window.show();
-        } catch (error) {
-            ztoolkit.log("更新进度窗口失败:", error);
+        const shared = this.shared;
+        if (!shared || JobProgressPopup.shared !== shared) return;
+        shared.lines[idx] = line;
+        for (const view of shared.views.values()) {
+            try {
+                view.changeLine({ idx, ...line });
+                view.show();
+            } catch (error) {
+                Privacy?.log("更新进度窗口失败:", error);
+            }
         }
     }
 
@@ -1322,9 +1354,12 @@ class JobProgressPopup {
     }
 
     complete(succeeded: number, failed: number) {
-        if (!this.enabled) {
+        const shared = this.shared;
+        if (!this.enabled || this.completed || !shared || JobProgressPopup.shared !== shared) {
             return;
         }
+        this.completed = true;
+        shared.hasErrors ||= failed > 0;
         this.changeLine(this.summaryIdx, {
             text: getString("operation-batch-completed", {
                 args: {
@@ -1346,29 +1381,20 @@ class JobProgressPopup {
                       : "success",
             progress: 100,
         });
-        const shared = JobProgressPopup.shared;
-        if (!shared) {
-            return;
-        }
         shared.batches = Math.max(0, shared.batches - 1);
-        if (shared.batches > 0) {
+        if (shared.batches > 0 || shared.hasErrors) {
             return;
         }
         const token = ++shared.closeToken;
         Zotero.Promise.delay(8000).then(() => {
             if (
-                !JobProgressPopup.shared ||
-                JobProgressPopup.shared.closeToken !== token ||
-                JobProgressPopup.shared.batches > 0
+                JobProgressPopup.shared !== shared ||
+                shared.closeToken !== token ||
+                shared.batches > 0
             ) {
                 return;
             }
-            try {
-                JobProgressPopup.shared.window?.close();
-            } catch (error) {
-                ztoolkit.log("关闭进度窗口失败:", error);
-            }
-            JobProgressPopup.shared = null;
+            JobProgressPopup.dispose();
         });
     }
 }

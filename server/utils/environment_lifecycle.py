@@ -6,6 +6,7 @@ import platform
 import re
 import shutil
 import subprocess
+from utils.silent_process import run as quiet_run
 import sys
 from collections.abc import Mapping
 from pathlib import Path
@@ -197,7 +198,7 @@ def _conda_info() -> dict | None:
     if not shutil.which("conda"):
         return None
     try:
-        result = subprocess.run(
+        result = quiet_run(
             ["conda", "info", "--json"],
             capture_output=True,
             text=True,
@@ -245,7 +246,7 @@ def _query_conda_python(name: str) -> Path | None:
         "import sys; print(sys.executable)",
     ]
     try:
-        result = subprocess.run(
+        result = quiet_run(
             command,
             capture_output=True,
             text=True,
@@ -302,7 +303,7 @@ def read_versions(python_path: Path, engine: str) -> dict[str, str | None]:
         "    except PackageNotFoundError: out[name]=None\n"
         "print(json.dumps(out))"
     )
-    result = subprocess.run(
+    result = quiet_run(
         [str(python_path), "-I", "-c", code],
         capture_output=True,
         text=True,
@@ -374,7 +375,7 @@ def runtime_supports_deepseek_thinking(
         if isolated:
             command.append("-I")
         command.extend(["-c", code])
-        result = subprocess.run(
+        result = quiet_run(
             command,
             cwd=SERVER_ROOT,
             capture_output=True,
@@ -400,7 +401,7 @@ def _package_manager_env() -> dict[str, str]:
 
 def _pip_supports_dry_run(python_path: Path) -> bool:
     try:
-        result = subprocess.run(
+        result = quiet_run(
             [str(python_path), "-I", "-m", "pip", "install", "--help"],
             capture_output=True,
             text=True,
@@ -458,7 +459,7 @@ def _resolver_preflight(
     if command is None:
         return env_tool == "conda"
     try:
-        result = subprocess.run(
+        result = quiet_run(
             command,
             cwd=SERVER_ROOT,
             capture_output=True,
@@ -496,7 +497,7 @@ def _remove_conda_env(name: str) -> None:
     if not shutil.which("conda") or not find_conda_env_path(name):
         return
     try:
-        subprocess.run(
+        quiet_run(
             ["conda", "env", "remove", "-n", name, "-y"],
             cwd=SERVER_ROOT,
             check=False,
@@ -515,7 +516,7 @@ def _create_uv_environment(path: Path, python_version: str) -> Path:
     if existing.exists():
         return existing
     shutil.rmtree(path, ignore_errors=True)
-    subprocess.run(
+    quiet_run(
         [uv_path, "venv", str(path), "--python", python_version],
         cwd=SERVER_ROOT,
         check=True,
@@ -535,7 +536,7 @@ def _create_conda_environment(name: str, python_version: str) -> tuple[Path, Pat
     python_path = _resolve_named_conda_python(name)
     if python_path is not None:
         return resolve_environment_root(python_path), python_path
-    subprocess.run(
+    quiet_run(
         [
             conda_path,
             "create",
@@ -604,7 +605,7 @@ def _run_install(
             return False
         print(f"\n📦 使用下载源: {index_url}")
         try:
-            subprocess.run(
+            quiet_run(
                 command,
                 cwd=SERVER_ROOT,
                 check=True,
@@ -657,7 +658,7 @@ def managed_runtime_health(
         "print(json.dumps(out, ensure_ascii=False))"
     )
     try:
-        result = subprocess.run(
+        result = quiet_run(
             [str(python_path), "-I", "-c", code],
             cwd=SERVER_ROOT,
             capture_output=True,
@@ -691,7 +692,7 @@ def validate_environment(
             "    installed=version(req.name)\n"
             "    assert not req.specifier or req.specifier.contains(installed), (raw, installed)\n"
         )
-        result = subprocess.run(
+        result = quiet_run(
             [str(python_path), "-I", "-c", code],
             cwd=SERVER_ROOT,
             capture_output=True,

@@ -139,15 +139,38 @@ function setup() {
     const factory = load("../src/modules/pdf2zh.ts", {
         "../utils/locale": locale,
     });
+    const progressEvents: any[] = [];
+    const runtimeEvents: string[] = [];
     const hooks = load("../src/hooks.ts", {
+        "./modules/pdf2zhHelper": { PDF2zhHelperFactory: {
+            registerProgressWindow: (win: any) => progressEvents.push(["load", win]),
+            disposeProgressWindow: (win: any) => progressEvents.push(["unload", win]),
+            disposeProgress: () => progressEvents.push(["shutdown"]),
+        } },
+        "./modules/managedRuntime": { ManagedRuntime: { startIfInstalled: () => { runtimeEvents.push("start"); return new Promise(() => {}); } } },
         "./modules/pdf2zh": factory,
         "./utils/locale": locale,
         "./utils/ztoolkit": { createZToolkit },
         "./modules/preferenceScript": { initTableUI() {} },
     }).default;
     const menu = (win: any) => win.nodes.get("#zotero-itemmenu-pdf2zh");
-    return { window, hooks, addon, menu, errors, commands, factory };
+    return { window, hooks, addon, menu, errors, commands, factory, progressEvents, runtimeEvents };
 }
+
+test("ordinary startup prepares installed service asynchronously without delaying the UI", async () => {
+    const s = setup(); s.window();
+    await s.hooks.onStartup();
+    assert.deepEqual(s.runtimeEvents, ["start"]);
+});
+
+test("hooks restore progress on load and release views on unload and shutdown", async () => {
+    const s = setup();
+    const win = s.window();
+    await s.hooks.onMainWindowLoad(win);
+    await s.hooks.onMainWindowUnload(win);
+    s.hooks.onShutdown();
+    assert.deepEqual(s.progressEvents, [["load", win], ["unload", win], ["shutdown"]]);
+});
 
 test("startup registers each window even when another window is active", async () => {
     const s = setup();

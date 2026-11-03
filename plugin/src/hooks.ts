@@ -1,6 +1,7 @@
 // lifecycle hooks
 import { PDF2zhBasicFactory, PDF2zhUIFactory } from "./modules/pdf2zh";
 import { PDF2zhHelperFactory } from "./modules/pdf2zhHelper";
+import { ManagedRuntime } from "./modules/managedRuntime";
 import { getString, initLocale } from "./utils/locale";
 import { registerPrefsScripts, initTableUI } from "./modules/preferenceScript";
 
@@ -15,11 +16,14 @@ async function onStartup() {
     await Promise.all(
         Zotero.getMainWindows().map((win) => onMainWindowLoad(win)),
     );
+    // First-run installation requires consent; an installed engine prepares quietly.
+    ManagedRuntime.startIfInstalled().catch(() => {});
 }
 
 async function onMainWindowLoad(win: Window): Promise<void> {
     // 注册右键菜单, 显示加载弹窗
     PDF2zhUIFactory.registerRightClickMenuItem(win);
+    PDF2zhHelperFactory.registerProgressWindow(win);
     await Zotero.Promise.delay(200);
     // 渲染偏好设置的LLM API表格, 避免第一次打开Preference页面时LLM Config条目未完全加载
     // TOCHECK: 目前可以有效解决问题, 但是关闭Preference后这个初始化的内容不会被删除吗??
@@ -49,11 +53,13 @@ async function onPrefsEvent(type: string, data: { [key: string]: any }) {
 
 async function onMainWindowUnload(win: Window): Promise<void> {
     // The toolkit is shared by all windows; only remove this window's menu.
-    win.document.querySelector("#zotero-itemmenu-pdf2zh")?.remove();
+    win.document.querySelector(`#zotero-itemmenu-${addon.data.config.addonRef}`)?.remove();
+    PDF2zhHelperFactory.disposeProgressWindow(win);
     addon.data.dialog?.window?.close();
 }
 
 function onShutdown(): void {
+    PDF2zhHelperFactory.disposeProgress();
     ztoolkit.unregisterAll();
     addon.data.dialog?.window?.close();
     // Remove addon object

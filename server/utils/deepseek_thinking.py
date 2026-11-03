@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+from utils.silent_process import run as quiet_run
 import sys
 from pathlib import Path
 from typing import Any
@@ -209,7 +210,7 @@ def _runtime_supports_thinking(
         # have no inspectable Python environment, so --help remains the only
         # capability signal.  Keep this fallback isolated to that path.
         try:
-            result = subprocess.run(
+            result = quiet_run(
                 [*invocation_prefix, "--help"],
                 capture_output=True,
                 text=True,

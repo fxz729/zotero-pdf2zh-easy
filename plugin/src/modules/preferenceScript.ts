@@ -4,9 +4,10 @@ import {
     llmApiManager,
     LLMApiData,
     emptyLLMApi,
-    formatExtraDataForDisplay,
 } from "./llmApiManager";
 import axios from "axios";
+import { registerEasyPreferences } from "./easyPreferences";
+import { ManagedRuntime } from "./managedRuntime";
 
 const PREF_UI_TEXT = {
     zh: {
@@ -17,6 +18,9 @@ const PREF_UI_TEXT = {
         colApiKey: "API Key",
         colActivate: "激活",
         colExtraData: "额外参数",
+        extraDataCount: (count: number) => `已配置 ${count} 项`,
+        managedConnectionSuccess: "受管本地服务已通过身份校验并就绪。",
+        managedConnectionFailure: "无法验证受管本地服务身份或就绪状态，请检查上方引擎状态。未发送文档或 API 配置。",
         serverAddressRequired: "请先设置 Server IP 地址",
         connectionTitle: "Server 连接检查",
         checking: "正在检查 Server 连接...",
@@ -55,6 +59,9 @@ const PREF_UI_TEXT = {
         colApiKey: "API Key",
         colActivate: "Active",
         colExtraData: "Extra Parameters",
+        extraDataCount: (count: number) => `${count} configured fields`,
+        managedConnectionSuccess: "Managed local service identity verified and ready.",
+        managedConnectionFailure: "Unable to verify the managed local service identity or readiness. Check the engine status above. No document or API configuration was sent.",
         serverAddressRequired: "Set the Server IP address first.",
         connectionTitle: "Server Connection Check",
         checking: "Checking Server connection...",
@@ -116,6 +123,10 @@ export async function registerPrefsScripts(_window: Window) {
     bindPrefEvents();
     initTableUI();
     initializeEngineConfig();
+    registerEasyPreferences(_window, () => {
+        loadLLMApisFromPrefs();
+        updateLLMApiTableUI();
+    });
 }
 
 function bindPrefEvents() {
@@ -590,9 +601,8 @@ export function loadLLMApisFromPrefs() {
             ztoolkit.log("Parsed data is not an array");
         }
     } catch (error) {
-        ztoolkit.log("Error loading LLM APIs from prefs:", error);
+        ztoolkit.log("Unable to load LLM API preferences; stored values were not logged.");
     }
-    ztoolkit.log("LLM APIs loaded from prefs:", addon.data.llmApis);
 }
 
 function updateLLMApiTableUI() {
@@ -612,13 +622,15 @@ function getRowData(index: number) {
         const key = keys[index];
         llmApi = addon.data.llmApis?.map.get(key) || emptyLLMApi;
     }
+    const extraDataCount = llmApi.extraData && typeof llmApi.extraData === "object"
+        ? Object.keys(llmApi.extraData).length : 0;
     return {
         key: llmApi.key || "",
         service: llmApi.service || "",
         model: llmApi.model || "",
         apiUrl: llmApi.apiUrl || "",
-        apiKey: llmApi.apiKey || "",
-        extraData: formatExtraDataForDisplay(llmApi.extraData),
+        apiKey: llmApi.apiKey ? "••••••••" : "",
+        extraData: extraDataCount ? prefText("extraDataCount", extraDataCount) : "",
         activate: llmApi.activate ? "✅" : "",
     };
 }
@@ -842,6 +854,19 @@ async function checkServerConnection() {
         return;
     }
 
+    const managedUrl = serverUrl.trim();
+    if (/^http:\/\/(127\.0\.0\.1|localhost):8891\/?$/i.test(managedUrl)) {
+        try {
+            // This executes the owned helper's HMAC check, not a cached status
+            // or the legacy unauthenticated health endpoint.
+            if (await ManagedRuntime.ensureReady(managedUrl) !== true) throw new Error();
+            ztoolkit.getGlobal("alert")(prefText("managedConnectionSuccess"));
+        } catch {
+            ztoolkit.getGlobal("alert")(prefText("managedConnectionFailure"));
+        }
+        return;
+    }
+
     const progressWindow = new ztoolkit.ProgressWindow(
         prefText("connectionTitle"),
         { closeOnClick: false, closeTime: -1 },
@@ -870,7 +895,7 @@ async function checkServerConnection() {
             throw new Error(prefText("wrongService"));
         }
         const version = data.version || prefText("unknown");
-        ztoolkit.log("Server connection succeeded:", data);
+        ztoolkit.log("Server connection succeeded.");
         progressWindow.changeLine({
             text: prefText("successLine", version),
             type: "success",
@@ -883,7 +908,7 @@ async function checkServerConnection() {
             );
         }, 1000);
     } catch (error) {
-        ztoolkit.log("Server connection failed:", error);
+        ztoolkit.log("Server connection failed; request and response details were not logged.");
         let errorMsg = prefText("unknownError");
         let troubleshooting = prefText("genericHelp");
 

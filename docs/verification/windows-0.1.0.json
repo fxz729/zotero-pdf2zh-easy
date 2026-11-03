@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "release_version": "0.1.0",
+  "provenance": {
+    "source": "maintainer_provided_sanitized_statistics",
+    "original_reports_read_for_this_document_update": false,
+    "original_reports_included": false,
+    "personal_paths_or_account_details_included": false,
+    "api_configuration_or_identity_values_included": false
+  },
+  "platform": {
+    "os": "Windows",
+    "architecture": "x86_64",
+    "zotero_version": "10.0.6",
+    "native_acceptance": "baseline_passed_for_recorded_cases_only"
+  },
+  "production_artifact": {
+    "version": "0.1.0",
+    "sha256": "0e926b276a1044321f984875c2728a419c12fe59c2457cf81a73f34107c9d3a4",
+    "private_test_interface_present": false,
+    "release_page": "https://github.com/fxz729/zotero-pdf2zh-easy/releases/tag/v0.1.0",
+    "frontend_changes_from_baseline": [
+      "advanced_connection_check_uses_managed_runtime",
+      "extra_data_list_displays_field_count_only_not_value_prefixes"
+    ],
+    "replacement_verified_while_zotero_closed": true,
+    "replacement_sha256_verified": true,
+    "runtime_source_files_compared": 25,
+    "runtime_source_files_identical_to_baseline": true,
+    "configuration_modified_during_replacement": false,
+    "full_native_chain_rerun": false
+  },
+  "native_baseline_artifact": {
+    "version": "0.1.0",
+    "sha256": "ca62849294d28142245a9a2d81bee72f2ac96a66db5ed220ab7f5140880eb3e7",
+    "installed_on_tested_machine": true,
+    "evidence_sections": [
+      "clean_isolated_first_install",
+      "existing_configuration_preservation",
+      "normal_restart",
+      "real_api_synthetic_document",
+      "progress_ui",
+      "attachment_interoperability"
+    ],
+    "evidence_applies_to_final_artifact_full_chain": false
+  },
+  "clean_isolated_first_install": {
+    "profile_kind": "clean_isolated",
+    "guided_install_seconds": 189.915,
+    "complete_native_case_seconds": 203.557,
+    "visible_console_windows_observed": 0,
+    "service_survived_helper_exit": true,
+    "service_survived_zotero_exit": true
+  },
+  "existing_configuration_preservation": {
+    "settings_compared": 51,
+    "settings_and_api_values_exactly_preserved": true,
+    "pool_size": 128,
+    "qps": 48,
+    "original_addon_disabled": true,
+    "original_addon_backed_up": true
+  },
+  "normal_restart": {
+    "started_from_official_executable": true,
+    "launched_via_cmd": false,
+    "service_fresh_ready": true,
+    "hmac_identity_verified": true,
+    "verified_listener_count": 1,
+    "settings_and_api_persistence_exactly_preserved": true,
+    "independent_fresh_cold_start_visible_console_windows_observed": 0
+  },
+  "real_api_synthetic_document": {
+    "provider_request_was_real": true,
+    "document_kind": "synthetic_single_page",
+    "elapsed_seconds": 109.146,
+    "output_page_count": 1,
+    "output_page_size_reported": [1190, 842],
+    "left_original_english_word_coverage": 1.0,
+    "right_chinese_character_count": 288,
+    "preserved_numbers": [128, 48],
+    "translation_accuracy_measured": false,
+    "coverage_interpretation": "original_text_retention_only_not_translation_accuracy"
+  },
+  "progress_ui": {
+    "minimum_progress": 0,
+    "maximum_progress": 100,
+    "card_count": 1,
+    "native_progress_window_count": 0
+  },
+  "attachment_interoperability": {
+    "synthetic_source_converted_to_linked_attachment_by_existing_manager": true,
+    "current_child_reselected_using_synthetic_source_bytes": true,
+    "existing_attachment_manager_modified": false,
+    "private_literature_modified": false
+  },
+  "local_automation": {
+    "node_tests_passed": 126,
+    "python_tests_passed": 106,
+    "build_includes_post_archive_only_audit": true,
+    "remote_ci_status_source": "https://github.com/fxz729/zotero-pdf2zh-easy/actions",
+    "remote_ci_result_asserted_here": false
+  },
+  "public_screenshots": {
+    "settings": "docs/images/settings.png",
+    "progress": "docs/images/progress-card.png",
+    "configuration_scope": "isolated_empty_profile_no_real_user_configuration",
+    "progress_content": "synthetic_event_demonstration_not_real_translation_output"
+  },
+  "not_verified": [
+    "other_zotero_versions",
+    "macos_native_installation_and_translation",
+    "linux_native_installation_and_translation",
+    "other_papers_or_complex_layouts",
+    "general_translation_accuracy"
+  ],
+  "limitations": [
+    "installation_and_initial_model_or_font_resources_may_require_network_access",
+    "service_may_continue_running_after_zotero_exits",
+    "no_settings_stop_service_button",
+    "repair_requires_stopped_idle_service",
+    "test_counts_are_local_results_not_remote_ci_results"
+  ]
+}

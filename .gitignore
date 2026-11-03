@@ -3,9 +3,24 @@ node_modules/
 plugin/build/
 plugin/.scaffold/
 plugin/ast.json
+plugin/addon/content/runtime/
+**/service-token
+**/installation.json
+**/server-pid.json
+**/status.json
+*.lock
+!/plugin/package-lock.json
+/cache/
+/python/
+/bin/
 dist/
 research/
 dependency-audit*.json
+# One-off local inspection utilities and private implementation checkpoint
+/import_upstream.py
+/inspect_zotero_subprocess.py
+/port_headless_tests.py
+/docs/implementation-status.md
 # Runtime and all personal data
 .env
 .env.*

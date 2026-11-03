@@ -1,0 +1,70 @@
+name: Test and build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-build:
+    name: Unit tests and XPI (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: plugin/package-lock.json
+
+      - name: Set up Python for unit tests only
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: runtime/requirements-server.txt
+
+      # No full engine install, Zotero profile, provider key, or live API request.
+      - name: Install Python unit-test dependencies
+        run: python -m pip install -r runtime/requirements-server.txt rich
+
+      - name: Run Python regressions
+        run: python -B -m unittest discover -s tests -p "test_*.py" -v
+
+      - name: Install locked plugin dependencies
+        working-directory: plugin
+        run: npm ci --no-audit --no-fund
+
+      - name: Run plugin regressions
+        working-directory: plugin
+        run: npm test
+
+      - name: Build XPI with type checking
+        working-directory: plugin
+        run: npm run build
+
+      # Build artifacts are not releases or Zotero native-validation evidence.
+      - name: Save XPI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf2zh-easy-${{ matrix.os }}
+          path: plugin/build/pdf-2-zh-easy.xpi
+          if-no-files-found: error
+          retention-days: 14

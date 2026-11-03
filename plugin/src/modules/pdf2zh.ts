@@ -6,7 +6,7 @@ export class PDF2zhBasicFactory {
         Zotero.PreferencePanes.register({
             pluginID: addon.data.config.addonID,
             src: rootURI + "content/preferences.xhtml",
-            label: getString("prefs-title"),
+            label: addon.data.config.addonName,
             image: `chrome://${addon.data.config.addonRef}/content/icons/favicon.svg`,
         });
     }
@@ -26,7 +26,8 @@ export class PDF2zhUIFactory {
             );
             return;
         }
-        if (win.document.querySelector("#zotero-itemmenu-pdf2zh")) return;
+        const menuId = `zotero-itemmenu-${addon.data.config.addonRef}`;
+        if (win.document.querySelector(`#${menuId}`)) return;
         const menuIcon = `chrome://${addon.data.config.addonRef}/content/icons/favicon@0.5x.svg`;
         const MENU_ITEMS = [
             {
@@ -52,19 +53,19 @@ export class PDF2zhUIFactory {
         ];
         const pdf2zhMenu: MenuitemOptions = {
             tag: "menu",
-            id: "zotero-itemmenu-pdf2zh",
+            id: menuId,
             icon: menuIcon,
-            label: `PDF2zh`,
+            label: addon.data.config.addonName || "PDF2zh Easy",
             children: MENU_ITEMS.map(({ id, label, command }) => ({
                 tag: "menuitem",
-                id: `zotero-itemmenu-${id}`,
+                id: `${menuId}-${id}`,
                 label: `PDF2zh: ${label}`,
                 commandListener: () => addon.hooks.onDialogEvents(command),
             })),
         };
         ztoolkit.Menu.register(popup, pdf2zhMenu);
         patchMenuCompat(
-            win.document.querySelector("#zotero-itemmenu-pdf2zh"),
+            win.document.querySelector(`#${menuId}`),
             menuIcon,
         );
     }

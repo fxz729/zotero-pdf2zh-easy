@@ -6,6 +6,7 @@ from flask import Flask, request, jsonify, send_file, Response
 from werkzeug.serving import WSGIRequestHandler
 import base64
 import subprocess
+from utils.silent_process import run as quiet_run, popen as quiet_popen
 import json, toml
 import shutil
 from pypdf import PdfReader
@@ -50,12 +51,6 @@ venv        = 'venv'
 # TODO: 强制设置标准输出和标准错误的编码为 UTF-8
 # sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 # sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
-
-# Windows 下防止子进程弹出控制台窗口
-if sys.platform == 'win32':
-    CREATE_NO_WINDOW = subprocess.CREATE_NO_WINDOW
-else:
-    CREATE_NO_WINDOW = 0
 
 # 所有系统: 获取当前脚本server.py所在的路径
 root_path     = os.path.dirname(os.path.abspath(__file__))
@@ -1172,7 +1167,7 @@ class PDFTranslator:
                 # DeepSeek capability validation remains handled separately.
                 # 执行主命令 - 附着父控制台
                 print("🔍 [winexe] 开始执行（预期在当前终端显示实时日志）...")
-                process = subprocess.Popen(
+                process = quiet_popen(
                     cmd,
                     shell=False,
                     cwd=exe_dir,
@@ -1202,11 +1197,10 @@ class PDFTranslator:
             else:
                 # 回退模式：静默模式（旧行为）
                 print("🔇 [winexe] mode=silent")
-                r = subprocess.run(
+                r = quiet_run(
                     cmd,
                     shell=False,
                     cwd=exe_dir,
-                    creationflags=CREATE_NO_WINDOW,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,

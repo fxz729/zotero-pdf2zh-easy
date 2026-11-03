@@ -4,6 +4,7 @@
 import json, toml
 import os
 
+from utils.privacy import register_credentials, redact_json, safe_print as print
 from utils.config_map import (
     pdf2zh_config_map,
     pdf2zh_next_config_map,
@@ -38,13 +39,7 @@ def _normalize_openai_send_temperature_key(values):
 
 
 def _safe_log_value(key, value):
-    name = str(key or '').lower()
-    if any(token in name for token in ('key', 'token', 'secret', 'password', 'auth')):
-        raw = str(value or '')
-        if not raw:
-            return ''
-        return ('*' * 8 + raw[-4:]) if len(raw) > 4 else ('*' * len(raw))
-    return value
+    return redact_json({key: value})[key]
 
 
 def stringToBoolean(value):
@@ -103,6 +98,7 @@ def coerce_pdf2zh_next_extra_value(key, value):
 
 class Config:
     def __init__(self, request_data):
+        register_credentials(request_data.get('llm_api', {}))
         self.engine = request_data.get('engine', 'pdf2zh')
         if self.engine not in [pdf2zh, pdf2zh_next]:
             self.engine = pdf2zh
@@ -259,7 +255,7 @@ class Config:
                         translator['envs'][mapped_key] = value
                         translator_keys.append(mapped_key)
                         if key == "apiKey":
-                            print(f"✏️ 更新 {key}: {mapped_key} = {'*' * 8 + value[-4:] if len(value) > 4 else '*' * len(value)}")
+                            print(f"✏️ 更新 {key}: {mapped_key} = {_safe_log_value(key, value)}")
                         else:
                             print(f"✏️ 更新 {key}: {mapped_key} = {value}") 
                     else:
@@ -272,7 +268,7 @@ class Config:
                     if value not in (None, "", [], {}):
                         translator['envs'][key] = value
                         translator_keys.append(key)
-                        print(f"✏️ 更新 extraData: {key} = {_safe_log_value(key, value)}")
+                        print(f"✏️ 更新 extraData: {key} (value omitted)")
                     else:
                         print(f"✏️ 跳过 extraData: {key} = {value} (empty or null)")
 
@@ -374,7 +370,7 @@ class Config:
                         translator[mapped_key] = value
                         translator_keys.append(mapped_key)
                         if key == "apiKey":
-                            print(f"✏️ 更新 {key}: {mapped_key} = {'*' * 8 + value[-4:] if len(value) > 4 else '*' * len(value)}")
+                            print(f"✏️ 更新 {key}: {mapped_key} = {_safe_log_value(key, value)}")
                         else:
                             print(f"✏️ 更新 {key}: {mapped_key} = {value}") 
                     else:
@@ -388,7 +384,7 @@ class Config:
                     if coerced not in (None, "", [], {}):
                         translator[key] = coerced
                         translator_keys.append(key)
-                        print(f"✏️ 更新 extraData: {key} = {_safe_log_value(key, coerced)}")
+                        print(f"✏️ 更新 extraData: {key} (value omitted)")
                     else:
                         print(f"✏️ 跳过 extraData: {key} = {value} (empty or null)")
 

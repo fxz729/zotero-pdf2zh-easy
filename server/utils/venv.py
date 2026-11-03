@@ -6,8 +6,11 @@ import os
 import platform
 import shutil
 import subprocess
+from utils.silent_process import run as quiet_run, popen as quiet_popen
 import sys
 import traceback
+import threading
+from utils.privacy import redact_argv, redact_text, safe_print as print
 from collections import defaultdict
 from pathlib import Path
 
@@ -186,7 +189,7 @@ class VirtualEnvManager:
                     "    if req.name.lower() == 'bitstring':\n"
                     "        assert req.specifier.contains(installed), (raw, installed)\n"
                 )
-                result = subprocess.run(
+                result = quiet_run(
                     [str(python_path), "-I", "-c", code],
                     capture_output=True,
                     text=True,
@@ -222,7 +225,7 @@ class VirtualEnvManager:
             print(f"❌ {envtool} 未安装或不在 PATH 中")
             return False
         try:
-            result = subprocess.run(
+            result = quiet_run(
                 [executable, "--version"],
                 capture_output=True,
                 text=True,
@@ -408,33 +411,50 @@ class VirtualEnvManager:
             return self._resolved_command(command)
         except Exception as exc:
             print(f"⚠️ 获取虚拟环境命令失败: {exc}")
-            traceback.print_exc()
+            print(traceback.format_exc())
             raise
 
     def execute_in_env(self, command):
         final_cmd, env = self.get_command_and_env(command)
-        print(f"🚀 执行命令: {' '.join(str(value) for value in final_cmd)}")
-        process = subprocess.Popen(
+        diagnostic_cmd = redact_argv(final_cmd)
+        print("🚀 执行托管翻译命令（参数已省略）")
+        process = quiet_popen(
             final_cmd,
-            stdout=None,
+            stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
+            encoding='utf-8',
+            errors='replace',
             bufsize=1,
             env=env,
         )
+        # Inherited OS stdout bypasses Python's wrapper. Drain both pipes so a
+        # noisy provider cannot deadlock and only diagnostic copies reach logs.
+        def forward_stdout():
+            if process.stdout:
+                try:
+                    for line in process.stdout:
+                        sys.stdout.write(redact_text(line))
+                        sys.stdout.flush()
+                finally:
+                    process.stdout.close()
+        stdout_reader = threading.Thread(target=forward_stdout, daemon=True)
+        stdout_reader.start()
         stderr_lines = []
         if process.stderr:
             for line in process.stderr:
-                stderr_lines.append(line)
-                sys.stderr.write(line)
+                clean = redact_text(line)
+                stderr_lines.append(clean)
+                sys.stderr.write(clean)
                 sys.stderr.flush()
             process.stderr.close()
         return_code = process.wait()
+        stdout_reader.join()
         stderr_text = "".join(stderr_lines)
         if return_code != 0:
             raise subprocess.CalledProcessError(
                 returncode=return_code,
-                cmd=final_cmd,
+                cmd=diagnostic_cmd,
                 output=None,
                 stderr=stderr_text,
             )

@@ -3,6 +3,7 @@ import codecs
 import re
 import select
 import subprocess
+from utils.silent_process import popen as quiet_popen
 import sys
 import threading
 from datetime import datetime
@@ -322,7 +323,7 @@ def _execute_with_pty(final_cmd, final_env, task_id, cols, rows):
     except Exception:
         pass
 
-    process = subprocess.Popen(
+    process = quiet_popen(
         final_cmd,
         stdout=slave_fd,
         stderr=slave_fd,
@@ -674,12 +675,54 @@ def _guard_windows_console_min_width(stop_event, min_cols):
         stop_event.wait(0.08)
 
 
+def _execute_with_pipe(final_cmd, final_env, task_id):
+    """Headless Windows: decode complete Rich/tqdm frames from hidden pipes."""
+    pipe_env = final_env.copy()
+    pipe_env.update(
+        PYTHONUNBUFFERED="1", FORCE_COLOR="1", TTY_COMPATIBLE="1",
+        TTY_INTERACTIVE="1", TERM="xterm-256color", COLUMNS="200", TTY_COLUMNS="200",
+    )
+    process = quiet_popen(
+        final_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        env=pipe_env, bufsize=0, text=False,
+    )
+    decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")
+    pending = ""
+    try:
+        while True:
+            data = process.stdout.read(4096)
+            text = decoder.decode(data, final=not data)
+            if sys.stdout is not None:
+                sys.stdout.write(text)
+                sys.stdout.flush()
+            frames = re.split(r"[\r\n]", pending + text)
+            pending = frames.pop()
+            for frame in frames:
+                if frame:
+                    _parse_progress(frame, task_id)
+            if not data:
+                if pending:
+                    _parse_progress(pending, task_id)
+                break
+        return_code = process.wait()
+        if return_code != 0:
+            raise subprocess.CalledProcessError(return_code, final_cmd)
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.wait()
+        process.stdout.close()
+
+
 def _execute_with_inherit(final_cmd, final_env, task_id, cols):
     """
     Windows: inherit stdout/stderr so terminal keeps native multi-progress UI.
     Progress parsing is done by a side monitor reading console buffer.
     """
-    process = subprocess.Popen(
+    if _windows_visible_console_size() is None:
+        return _execute_with_pipe(final_cmd, final_env, task_id)
+
+    process = quiet_popen(
         final_cmd,
         stdout=None,
         stderr=None,
